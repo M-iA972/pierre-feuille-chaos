@@ -1,0 +1,527 @@
+/* =============================================================
+   style.css — Design « bonbon chaleureux », mobile et animations
+   ============================================================= */
+
+/* ---------- Couleurs et réglages communs ---------- */
+:root {
+  --rose: #FFC8DD;
+  --bleu: #BDE0FE;
+  --violet: #CDB4DB;
+  --jaune: #FFF1A8;
+  --peche: #FFD6E0;
+  --lavande: #D8C8F0;
+  --texte: #4A4063;
+  --verre: rgba(255, 255, 255, 0.4);
+  --ombre: 0 10px 30px rgba(74, 64, 99, 0.15);
+  /* relief « pâte à modeler » : lumière en haut, ombre en bas */
+  --relief: inset 0 6px 8px rgba(255, 255, 255, 0.7), inset 0 -6px 10px rgba(74, 64, 99, 0.1), 0 8px 16px rgba(74, 64, 99, 0.18);
+  --relief-enfonce: inset 0 4px 8px rgba(74, 64, 99, 0.15), 0 2px 6px rgba(74, 64, 99, 0.15);
+  /* distance entre les centres des deux coups du duel */
+  --pas: min(calc(50vw + 2px), 370px);
+}
+
+* { box-sizing: border-box; }
+
+/* Fond : dégradé rose pêche → violet lavande ; la carte est centrée dans la page */
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+  background: linear-gradient(135deg, var(--peche), var(--lavande)) fixed;
+  color: var(--texte);
+  font-family: 'Fredoka', sans-serif;
+  font-size: 18px;
+  overflow-x: hidden;
+}
+
+/* Les grosses bulles floues qui flottent lentement derrière la carte */
+.nuage {
+  position: fixed;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.7;
+  animation: flotte-lent 18s ease-in-out infinite alternate;
+}
+.n1 { width: 320px; height: 320px; background: var(--rose); top: -60px; left: -80px; }
+.n2 { width: 260px; height: 260px; background: var(--bleu); top: 40%; right: -70px; animation-duration: 22s; }
+.n3 { width: 220px; height: 220px; background: var(--jaune); bottom: -50px; left: 15%; animation-duration: 26s; }
+.n4 { width: 280px; height: 280px; background: var(--violet); top: 10%; right: 25%; animation-duration: 30s; }
+
+/* La carte en verre givré qui contient tout le jeu */
+.carte {
+  position: relative;
+  width: min(720px, calc(100% - 24px));
+  margin: 24px 0;
+  padding: 40px 32px;
+  text-align: center;
+  background: var(--verre);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 32px;
+  box-shadow: var(--ombre);
+}
+.carte.secousse { animation: secousse 0.35s; }
+
+/* Un écran caché (on affiche un seul écran à la fois) */
+.cache { display: none !important; }
+
+.ecran { animation: apparait 0.3s; }
+
+/* ---------- Titres ---------- */
+h1, .score, .centre, .mystere {
+  font-family: 'Luckiest Guy', cursive;
+  color: var(--texte);
+  text-shadow: 3px 3px 0 var(--violet);
+  letter-spacing: 1px;
+}
+h1 { font-size: 56px; line-height: 1.1; margin: 16px 0 8px; }
+h2 { font-weight: 600; }
+.sous-titre { margin-bottom: 36px; font-size: 20px; }
+
+/* ---------- Boutons « pâte à modeler » ---------- */
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+.bouton, .coup, .btn-son {
+  border: none;
+  box-shadow: var(--relief);
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+}
+
+/* Survol : grossit ; clic : s'enfonce */
+.bouton:hover:enabled, .coup:hover:enabled, .btn-son:hover { transform: scale(1.07); }
+.bouton:active:enabled, .coup:active:enabled, .btn-son:active {
+  transform: scale(0.95) translateY(3px);
+  box-shadow: var(--relief-enfonce);
+}
+.bouton:disabled { opacity: 0.5; cursor: default; }
+
+.bouton {
+  border-radius: 999px;
+  padding: 18px 36px;
+  background: var(--rose);
+  font-weight: 600;
+  font-size: 20px;
+}
+.bouton.secondaire { background: var(--bleu); }
+
+.pile { display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.rangee { display: flex; gap: 16px; justify-content: center; align-items: center; flex-wrap: wrap; }
+
+.btn-son {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--jaune);
+  font-size: 22px;
+}
+
+.lien, .lien-simple { border: none; background: none; text-decoration: underline; }
+.lien { position: absolute; top: 14px; left: 20px; }
+.lien-simple { margin-top: 12px; }
+
+.info { min-height: 1.4em; font-weight: 600; }
+.record { margin-top: 40px; opacity: 0.85; }
+
+/* ---------- Écran de partie ---------- */
+#ecran-partie { padding-top: 16px; }
+
+.tableau-score {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  box-shadow: var(--relief);
+  font-size: 20px;
+}
+.camp { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.score { font-size: 36px; }
+
+/* Cœurs (joueuse) et étoiles (adversaire) */
+.jauge span { display: inline-block; font-size: 26px; color: #a98bc0; }
+#jauge-moi .plein { color: #ff8fb8; }
+#jauge-adv .plein { color: #9b78b8; }
+.jauge .rebond { animation: rebond 0.5s; }
+
+/* Le duel : Toi | VS | adversaire */
+.arene {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-top: 20px;
+  padding: 14px 0 20px;
+  background: rgba(189, 224, 254, 0.6);
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: inset 0 4px 12px rgba(74, 64, 99, 0.1);
+}
+.etiquette { display: block; font-weight: 600; font-size: 20px; }
+.coup-geant {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+}
+#coup-moi { --sens: 1; }   /* avance vers la droite */
+#coup-adv { --sens: -1; }  /* avance vers la gauche */
+.mystere { font-size: 110px; color: rgba(255, 255, 255, 0.85); }
+
+/* Au centre : « VS », ou le décompte en très gros */
+.centre { min-width: 90px; font-size: 40px; }
+.centre.decompte { font-size: 76px; animation: zoom-fort 0.45s; }
+
+/* La phrase qui explique le résultat */
+.message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.8em;
+  margin: 16px 0;
+  padding: 10px;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: 600;
+}
+.message.gagne { background: var(--jaune); box-shadow: var(--relief); animation: zoom 0.3s; }
+.message.perd { background: rgba(189, 224, 254, 0.7); box-shadow: var(--relief); animation: zoom 0.3s; }
+.message.egalite { background: rgba(205, 180, 219, 0.6); box-shadow: var(--relief); animation: zoom 0.3s; }
+
+/* La feuille de la blague, écrite à la main (papier ligné translucide) */
+.papier {
+  margin: 0 0 20px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.55) repeating-linear-gradient(transparent 0 31px, var(--bleu) 31px 32px);
+  border-radius: 16px;
+  box-shadow: var(--ombre);
+  font-family: 'Caveat', cursive;
+  font-size: 28px;
+  line-height: 32px;
+  text-align: left;
+  transform: rotate(-1.5deg);
+}
+
+/* ---------- Les personnages kawaii (SVG de persos.js) ---------- */
+.dessin { display: block; width: 100%; height: 100%; overflow: visible; }
+.perso { display: block; width: 72px; height: 72px; }
+.contour { stroke: var(--texte); stroke-width: 3; stroke-linejoin: round; }
+.visage { fill: var(--texte); }
+.visage .trait { fill: none; stroke: var(--texte); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.visage .blanc { fill: #FFFFFF; stroke: var(--texte); stroke-width: 1.6; }
+.visage .reflet { fill: #FFFFFF; }
+.visage .joue { fill: #FF9FC0; opacity: 0.55; }
+.visage .goutte { fill: #9FD3FF; }
+
+/* Toutes les expressions sont cachées… sauf celle de data-humeur */
+.visage .yeux, .visage .bouche, .visage .goutte { display: none; }
+[data-humeur="normal"] .yeux.normal, [data-humeur="normal"] .bouche.sourire,
+[data-humeur="fier"] .yeux.fier, [data-humeur="fier"] .bouche.fiere,
+[data-humeur="peur"] .yeux.ronds, [data-humeur="peur"] .bouche.grand-o, [data-humeur="peur"] .goutte,
+[data-humeur="sonne"] .yeux.spirale, [data-humeur="sonne"] .bouche.vague,
+[data-humeur="etonne"] .yeux.ronds, [data-humeur="etonne"] .bouche.petit-o { display: inline; }
+
+/* Sur les boutons et dans le salon, ils clignent des yeux en attendant */
+.coup .yeux.normal, .attente .yeux.normal {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cligne 4s infinite;
+}
+.coup[data-coup="feuille"] .yeux.normal, .attente .perso:nth-child(2) .yeux.normal { animation-delay: 1.3s; }
+.coup[data-coup="ciseaux"] .yeux.normal, .attente .perso:nth-child(3) .yeux.normal { animation-delay: 2.1s; }
+.coup-bonus .yeux.normal { animation-delay: 0.6s; }
+
+/* ---------- Les boutons de coup : 3 de base + l'outil bonus ---------- */
+.boutons-coups {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 20px;
+  padding-top: 18px;   /* place pour l'étiquette « Outil bonus » */
+}
+.coup {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 136px;
+  height: 136px;
+  border-radius: 999px;
+  background: var(--rose);
+  font-weight: 600;
+  font-size: 18px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;  /* pas de menu sur appui long (iPhone) */
+}
+.coup[data-coup="feuille"] { background: var(--bleu); }
+.coup[data-coup="ciseaux"] { background: var(--violet); }
+.coup-bonus { background: var(--jaune); }
+.coup:disabled { opacity: 0.5; cursor: default; }
+
+/* Le 4e bouton et sa petite étiquette jaune posée au-dessus */
+.case-bonus { position: relative; animation: zoom 0.3s; }
+.etiquette-bonus {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  z-index: 1;
+  transform: translateX(-50%);
+  padding: 3px 12px;
+  white-space: nowrap;
+  background: var(--jaune);
+  border: 2px dashed var(--violet);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Infobulle des règles, au-dessus du bouton, avec une flèche qui le pointe */
+.coup::after, .coup::before {
+  position: absolute;
+  left: 50%;
+  z-index: 5;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 6px);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.coup::after {
+  content: attr(data-regles);
+  bottom: calc(100% + 12px);
+  padding: 8px 16px;
+  white-space: nowrap;
+  background: var(--texte);
+  color: #FFF8FB;
+  border-radius: 999px;
+  box-shadow: var(--ombre);
+  font-size: 20px;
+  font-weight: 400;
+}
+.coup::before {
+  content: '';
+  bottom: calc(100% + 3px);
+  border: 10px solid transparent;
+  border-top-color: var(--texte);
+  border-bottom: 0;
+}
+@media (hover: hover) {
+  .coup:hover::after, .coup:hover::before { opacity: 1; transform: translate(-50%, 0); }
+}
+.coup.montre-regles::after, .coup.montre-regles::before { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Historique des manches ---------- */
+.historique {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  margin-top: 24px;
+}
+.manche-histo {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  box-shadow: var(--relief);
+  animation: zoom 0.3s;
+}
+.mini { display: block; width: 30px; height: 30px; }
+.pastille { width: 13px; height: 13px; margin-left: 4px; border: 2px solid rgba(255, 255, 255, 0.8); border-radius: 50%; }
+.manche-histo.gagne .pastille { background: #6FCF97; }
+.manche-histo.perd .pastille { background: #FF7B7B; }
+.manche-histo.egalite .pastille { background: #B3ADC2; }
+
+/* ---------- Écran de fin et salon ---------- */
+.fin-score { font-size: 24px; margin-bottom: 28px; }
+.attente { display: flex; justify-content: center; gap: 12px; margin-bottom: 28px; }
+.attente .perso { width: 60px; height: 60px; animation: sautille 0.9s infinite; }
+.attente .perso:nth-child(2) { animation-delay: 0.15s; }
+.attente .perso:nth-child(3) { animation-delay: 0.3s; }
+
+/* ---------- Mobile : les coups passent les uns sous les autres ---------- */
+@media (max-width: 600px) {
+  .carte { padding: 32px 16px 24px; }
+  h1 { font-size: 38px; }
+  .tableau-score { padding: 8px 12px; font-size: 14px; gap: 4px; }
+  .camp, .jauge, .score { gap: 4px; white-space: nowrap; }   /* tout tient sur une ligne */
+  .score { font-size: 22px; }
+  .jauge span { font-size: 16px; }
+  .coup-geant { width: 110px; height: 110px; }
+  .mystere { font-size: 84px; }
+  .centre { min-width: 60px; font-size: 30px; }
+  .centre.decompte { font-size: 54px; }
+  .message { font-size: 19px; border-radius: 24px; }
+  .boutons-coups { flex-direction: column; align-items: stretch; }
+  .coup { width: 100%; height: 96px; flex-direction: row; gap: 16px; }
+  .coup .perso { width: 64px; height: 64px; }
+}
+
+/* =============================================================
+   ANIMATIONS DU DUEL
+   Le JS met une classe « anim-xxx » sur l'arène, et « gagnant »,
+   « perdant » ou « bonus » sur les coups. Le CSS fait le reste.
+   Le choc a lieu vers 0,45 s ; le gagnant revient toujours à sa place
+   et le perdant ne disparaît jamais.
+   ============================================================= */
+
+/* Ciseaux contre feuille : les ciseaux avancent, la feuille se coupe en deux */
+.anim-coupe .gagnant { animation: attaque 1s; }
+
+/* Pierre contre ciseaux : la pierre saute dessus, les ciseaux tremblent puis cassent */
+.anim-casse .gagnant { animation: saute 1s; }
+.anim-casse .perdant { animation: tremble 0.12s 4; }
+
+/* Les deux moitiés d'un coup coupé ou cassé (créées au moment du choc) */
+.moitie { display: block; width: 100%; height: 100%; }
+.moitie.g { clip-path: inset(0 50% 0 0); animation: chute-g 0.5s forwards; }
+.moitie.d { position: absolute; inset: 0; clip-path: inset(0 0 0 50%); animation: chute-d 0.5s forwards; }
+
+/* Feuille contre pierre : la feuille grandit, recouvre la pierre, puis revient */
+.anim-recouvre .gagnant { animation: recouvre 1s; z-index: 2; }
+.anim-recouvre .perdant { animation: sous-la-feuille 1s; }
+
+/* Égalité (ou bonus contre bonus) : les deux se cognent et rebondissent */
+.anim-cogne .coup-geant { animation: cogne 0.9s; }
+
+/* Stylo contre feuille : le stylo gribouille (la blague s'écrit en JS) */
+.anim-blague .gagnant { animation: gribouille 1.2s; }
+
+/* Stylo perdant : écrasé par la pierre, mais toujours reconnaissable */
+.anim-ecrase .gagnant { animation: saute 1s; }
+.anim-ecrase .perdant { animation: ecrase 0.5s 0.4s forwards; }
+
+/* Super Glu : une tache de colle recouvre le coup d'en face, qui tremble */
+.anim-colle .gagnant { animation: gonfle-un-peu 0.5s; }
+.anim-colle .perdant { animation: tremble 0.12s 0.45s 6; }
+.anim-colle .perdant::after {
+  content: '';
+  position: absolute;
+  inset: 10px -4px;
+  background: rgba(255, 250, 215, 0.6);
+  border: 3px solid #f3e7a8;
+  border-radius: 45% 55% 40% 60%;
+  animation: apparait 0.3s 0.35s both;
+}
+
+/* Pistolet à eau : il tire ; la feuille se détrempe, les ciseaux rouillent */
+.anim-detrempe .bonus, .anim-rouille .bonus, .anim-glisse .bonus { animation: gonfle-un-peu 0.3s 3; }
+.anim-detrempe .perdant { animation: detrempe 0.8s 0.4s forwards; }
+.anim-rouille .perdant { animation: rouille 0.8s 0.4s forwards; }
+/* (anim-glisse : la pierre reste impassible, seules les gouttes bougent) */
+
+/* Ballon : soulève la feuille, rebondit sur la pierre, éclate sur les ciseaux */
+.anim-envole .gagnant { animation: envole 1.2s; }
+.anim-envole .perdant { animation: s-envole 1.2s; }
+.anim-rebondit .bonus { animation: rebondit 1.2s; }
+.anim-eclate .gagnant { animation: attaque 1s; }
+.anim-eclate .perdant { animation: eclate 0.6s 0.3s forwards; }
+
+/* Fin de l'animation (classe « fini ») : chacun à sa place,
+   le perdant reste visible mais grisé et penché */
+.arene.fini .gagnant, .arene.fini .perdant { animation: none; }
+.arene.fini .perdant { filter: grayscale(1); opacity: 0.55; transform: rotate(-10deg) scale(0.9); }
+
+/* Paillettes du choc, gouttes, confettis */
+.particule { position: absolute; z-index: 3; pointer-events: none; transform: translate(-50%, -50%); }
+.paillette {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+  animation: jaillit 0.8s ease-out forwards;
+}
+.jaillit { font-size: 24px; animation: jaillit 0.9s both; }
+
+/* Victoire : confettis qui tombent sur tout l'écran */
+.confetti {
+  position: fixed;
+  top: -20px;
+  width: 10px;
+  height: 14px;
+  border-radius: 3px;
+  pointer-events: none;
+  animation: pluie 3s linear forwards;
+}
+
+/* ---------- Les mouvements (keyframes) ---------- */
+@keyframes apparait { from { opacity: 0; } }
+@keyframes zoom { from { transform: scale(0.6); opacity: 0; } }
+@keyframes zoom-fort { from { transform: scale(2.2); opacity: 0; } }
+@keyframes rebond { 50% { transform: scale(1.6); } }
+@keyframes sautille { 50% { transform: translateY(-14px); } }
+@keyframes cligne { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes flotte-lent { to { transform: translate(60px, 40px) scale(1.15); } }
+@keyframes secousse {
+  20% { transform: translate(-7px, 2px); }
+  40% { transform: translate(6px, -2px); }
+  60% { transform: translate(-4px, 1px); }
+  80% { transform: translate(3px, 0); }
+}
+@keyframes attaque {
+  45%, 60% { transform: translateX(calc(var(--sens) * var(--pas) * 0.5)); }
+}
+@keyframes saute {
+  25% { transform: translate(calc(var(--sens) * var(--pas) * 0.25), -50px); }
+  45%, 60% { transform: translateX(calc(var(--sens) * var(--pas) * 0.5)); }
+}
+@keyframes recouvre {
+  45%, 70% { transform: translateX(calc(var(--sens) * var(--pas) * 0.8)) scale(1.4); }
+}
+@keyframes sous-la-feuille { 45%, 70% { opacity: 0.3; transform: scale(0.85); } }
+@keyframes tremble {
+  25% { transform: translateX(-5px) rotate(-5deg); }
+  75% { transform: translateX(5px) rotate(5deg); }
+}
+@keyframes chute-g { to { transform: translate(-10px, 14px) rotate(-20deg); } }
+@keyframes chute-d { to { transform: translate(10px, 14px) rotate(20deg); } }
+@keyframes cogne {
+  45% { transform: translateX(calc(var(--sens) * var(--pas) * 0.32)); }
+  70% { transform: translateX(calc(var(--sens) * -18px)); }
+}
+@keyframes gribouille {
+  30%, 70% { transform: translateX(calc(var(--sens) * var(--pas) * 0.5)) rotate(-25deg); }
+  50%, 85% { transform: translateX(calc(var(--sens) * var(--pas) * 0.55)) rotate(15deg); }
+}
+@keyframes ecrase {
+  50% { transform: scale(1.3, 0.4); }
+  100% { transform: scale(1, 0.85) rotate(-12deg); }
+}
+@keyframes gonfle-un-peu { 50% { transform: scale(1.25); } }
+@keyframes detrempe { to { filter: sepia(1) saturate(4) hue-rotate(170deg); transform: rotate(14deg) translateY(10px); } }
+@keyframes rouille { to { filter: sepia(1) saturate(6) hue-rotate(-20deg); } }
+@keyframes envole {
+  35% { transform: translateX(calc(var(--sens) * var(--pas) * 0.6)); }
+  65% { transform: translate(calc(var(--sens) * var(--pas) * 0.6), -60px); }
+}
+@keyframes s-envole {
+  35% { transform: none; }
+  65% { transform: translateY(-60px) rotate(15deg); }
+}
+@keyframes rebondit {
+  35% { transform: translateX(calc(var(--sens) * var(--pas) * 0.4)); }
+  60% { transform: translate(calc(var(--sens) * 10px), -40px); }
+  80% { transform: translateY(-8px); }
+}
+@keyframes eclate {
+  60% { transform: scale(1.5); }
+  100% { transform: scale(0.7) rotate(-15deg); }
+}
+@keyframes jaillit { to { transform: translate(var(--dx), var(--dy)) rotate(200deg); opacity: 0; } }
+@keyframes pluie { to { transform: translateY(110vh) rotate(720deg); } }

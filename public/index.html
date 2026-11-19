@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pierre Feuille Chaos</title>
+  <!-- Polices Google : Luckiest Guy (titres), Fredoka (textes), Caveat (blagues manuscrites) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Fredoka:wght@400;600&family=Luckiest+Guy&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Les textes vides (data-texte, data-nom, data-dessin) sont remplis par script.js
+       à partir de contenus.js et persos.js -->
+
+  <!-- Bouton pour couper les bruitages, toujours visible en haut à droite -->
+  <button id="btn-son" class="btn-son" aria-label="Couper ou activer les bruitages">🔊</button>
+
+  <!-- Grosses bulles floues qui flottent en arrière-plan (décor) -->
+  <div class="nuage n1"></div>
+  <div class="nuage n2"></div>
+  <div class="nuage n3"></div>
+  <div class="nuage n4"></div>
+
+  <!-- La carte en verre givré qui contient tout le jeu -->
+  <main id="carte" class="carte">
+    <!-- ÉCRAN 1 : Accueil -->
+    <section id="ecran-accueil" class="ecran">
+      <h1 data-texte="titre"></h1>
+      <p class="sous-titre" data-texte="sousTitre"></p>
+      <div class="pile">
+        <button id="btn-ordi" class="bouton" data-texte="contreOrdi"></button>
+        <button id="btn-en-ligne" class="bouton secondaire" data-texte="jouerEnLigne"></button>
+      </div>
+      <p id="info-accueil" class="info"></p>
+      <p id="record" class="record"></p>
+    </section>
+
+    <!-- ÉCRAN 2 : la partie (choix, décompte, duel, résultat) -->
+    <section id="ecran-partie" class="ecran cache">
+      <button id="btn-quitter" class="lien" data-texte="accueil"></button>
+
+      <!-- Score : cœurs de la joueuse, chiffres, étoiles de l'adversaire -->
+      <div class="tableau-score">
+        <div class="camp"><span data-texte="toi"></span><span id="jauge-moi" class="jauge"></span></div>
+        <div id="score" class="score"></div>
+        <div class="camp"><span id="jauge-adv" class="jauge"></span><span data-adv></span></div>
+      </div>
+
+      <!-- Le duel : mon coup à gauche, « VS » (ou le décompte) au milieu, l'adversaire à droite -->
+      <div id="arene" class="arene">
+        <div class="cote"><span class="etiquette" data-texte="toi"></span><div id="coup-moi" class="coup-geant"></div></div>
+        <div id="centre" class="centre"></div>
+        <div class="cote"><span class="etiquette" data-adv></span><div id="coup-adv" class="coup-geant"></div></div>
+      </div>
+
+      <!-- La phrase qui explique le résultat -->
+      <p id="message" class="message"></p>
+
+      <!-- La feuille où le stylo écrit sa blague -->
+      <p id="papier" class="papier cache"></p>
+
+      <!-- Les trois coups de base, et le 4e bouton : l'outil bonus (caché s'il n'y en a pas).
+           Les règles s'affichent en infobulle au survol (data-regles). -->
+      <div class="boutons-coups">
+        <button class="coup" data-coup="pierre"><span class="perso" data-dessin="pierre" data-humeur="normal"></span><span data-nom="pierre"></span></button>
+        <button class="coup" data-coup="feuille"><span class="perso" data-dessin="feuille" data-humeur="normal"></span><span data-nom="feuille"></span></button>
+        <button class="coup" data-coup="ciseaux"><span class="perso" data-dessin="ciseaux" data-humeur="normal"></span><span data-nom="ciseaux"></span></button>
+        <div id="case-bonus" class="case-bonus cache">
+          <span class="etiquette-bonus" data-texte="outilBonus"></span>
+          <button id="bonus" class="coup coup-bonus"><span id="bonus-perso" class="perso" data-humeur="normal"></span><span id="bonus-nom"></span></button>
+        </div>
+      </div>
+
+      <!-- Historique des manches : mon coup / son coup + pastille de couleur -->
+      <div id="historique" class="historique"></div>
+    </section>
+
+    <!-- ÉCRAN 3 : Fin de partie -->
+    <section id="ecran-fin" class="ecran cache">
+      <h1 id="fin-titre"></h1>
+      <p id="fin-score" class="fin-score"></p>
+      <div class="rangee">
+        <button id="btn-revanche" class="bouton" data-texte="revanche"></button>
+        <!-- seulement en ligne : relance une recherche -->
+        <button id="btn-nouvelle" class="bouton secondaire" data-texte="nouvelleAdversaire"></button>
+        <button id="btn-accueil" class="bouton secondaire" data-texte="accueil"></button>
+      </div>
+      <p id="fin-info" class="info"></p>
+    </section>
+
+    <!-- ÉCRAN 4 : Recherche d'une adversaire (file d'attente du serveur) -->
+    <section id="ecran-salon" class="ecran cache">
+      <h2 data-texte="recherche"></h2>
+      <p class="attente"><span class="perso" data-dessin="pierre" data-humeur="normal"></span><span class="perso" data-dessin="feuille" data-humeur="normal"></span><span class="perso" data-dessin="ciseaux" data-humeur="normal"></span></p>
+      <div class="pile">
+        <button id="btn-salon-ordi" class="bouton" data-texte="jouerOrdi"></button>
+        <button id="btn-annuler" class="bouton secondaire" data-texte="annuler"></button>
+      </div>
+    </section>
+
+    <!-- ÉCRAN 5 : l'adversaire a quitté la partie -->
+    <section id="ecran-parti" class="ecran cache">
+      <h2 data-texte="parti"></h2>
+      <button id="btn-parti-accueil" class="bouton" data-texte="accueil"></button>
+    </section>
+  </main>
+
+  <!-- Socket.IO (fourni par le serveur ; absent si on ouvre le fichier sans serveur) -->
+  <script src="socket.io/socket.io.js"></script>
+  <!-- L'ordre compte : règles, textes, dessins, puis le jeu, puis le mode en ligne -->
+  <script src="regles.js"></script>
+  <script src="contenus.js"></script>
+  <script src="persos.js"></script>
+  <script src="script.js"></script>
+  <script src="online.js"></script>
+</body>
+</html>

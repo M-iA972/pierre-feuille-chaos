@@ -1,0 +1,17 @@
+{
+  "name": "pierre-feuille-chaos",
+  "version": "1.0.0",
+  "description": "Pierre-feuille-ciseaux drôle avec des bonus farfelus, jouable seule ou en ligne",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
